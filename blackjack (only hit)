@@ -1,0 +1,47 @@
+import pygame
+import os
+import random
+from time import sleep as wait
+pygame.init()
+clock = pygame.time.Clock()
+base_dir = os.path.abspath(__file__)
+asset_dir = os.path.join(os.path.dirname(__file__), "assets")
+screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+scr_width, scr_height = screen.get_size()
+background = pygame.image.load( os.path.join(asset_dir, "background.png")).convert()
+background = pygame.transform.scale(background,(scr_width,scr_height))
+hit_playing = False
+font = pygame.font.SysFont(None, 60)
+possible_cards = [2,3,4,5,6,7,8,9,10,11]
+starting_card = random.choice(possible_cards)
+total = int(starting_card)
+dealer = 0
+WHITE = 255,255,255
+
+start_card_txt = font.render(f"your starting card is {starting_card}",False, WHITE)
+hit_or_stay_txt = font.render("1:Hit /n2:Stay", False, WHITE)
+def choice_1():
+    global total
+    new_card = random.choice(possible_cards)
+    screen.blit(font.render(f"your new card is {new_card}",False, WHITE),(scr_width/2, 0))
+    total = int(new_card) + total
+    screen.blit(font.render(f"your total is {total}",False, WHITE),(scr_width/2, 60))
+    pygame.display.flip()
+    wait(1.5)
+    if total >21:
+        screen.blit(font.render("Game Over",False, WHITE),(scr_width/2, scr_height/2))
+        running = False
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+            if event.key == pygame.K_1 and not hit_playing:
+                choice_1()
+    screen.blit(background,(0,0))
+    screen.blit(start_card_txt,(0,0))
+    screen.blit(hit_or_stay_txt,(0,60))
+    pygame.display.flip()
+    clock.tick(60)
+pygame.quit()
