@@ -17,11 +17,13 @@ starting_card = random.choice(possible_cards)
 total = int(starting_card)
 dealer = 0
 WHITE = 255,255,255
+running = True
 
 start_card_txt = font.render(f"your starting card is {starting_card}",False, WHITE)
 hit_or_stay_txt = font.render("1:Hit /n2:Stay", False, WHITE)
 def choice_1():
     global total
+    global running
     new_card = random.choice(possible_cards)
     screen.blit(font.render(f"your new card is {new_card}",False, WHITE),(scr_width/2, 0))
     total = int(new_card) + total
@@ -30,8 +32,9 @@ def choice_1():
     wait(1.5)
     if total >21:
         screen.blit(font.render("Game Over",False, WHITE),(scr_width/2, scr_height/2))
+        pygame.display.flip()
+        wait(1.5)
         running = False
-running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
