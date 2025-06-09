@@ -12,7 +12,7 @@ background = pygame.image.load( os.path.join(asset_dir, "background.png")).conve
 background = pygame.transform.scale(background,(scr_width,scr_height))
 hit_playing = False
 font = pygame.font.SysFont(None, 60)
-possible_cards = [2,3,4,5,6,7,8,9,10,11]
+possible_cards = [2,3,4,5,6,7,8,9,10,]
 starting_card = random.choice(possible_cards)
 total = int(starting_card)
 dealer = 0
@@ -85,18 +85,42 @@ def choice_2():
             pygame.display.flip()
             wait(1)
             running = False
-
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
-            if event.key == pygame.K_1 and not hit_playing:
-                hit_playing = True
-                choice_1()
-            if event.key == pygame.K_2:
-                choice_2()
-
+def ask():
+    global running
+    global total
+    global dealer
+    global starting_card
     clear()
-    clock.tick(60)
+    asking = True
+    while asking:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_y:
+                    total = starting_card
+                    dealer = 0
+                    running = True
+                    asking = False
+                    game()
+                else:
+                    asking = False
+        screen.blit(font.render("do you want to play again? (Y/N)",False, WHITE),(scr_width/2, scr_height/2))
+        pygame.display.flip()
+
+def game():
+    global running
+    global hit_playing
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                if event.key == pygame.K_1 and not hit_playing:
+                    hit_playing = True
+                    choice_1()
+                if event.key == pygame.K_2:
+                    choice_2()
+        clear()
+        clock.tick(60)
+    ask()
+game()
 pygame.quit()
