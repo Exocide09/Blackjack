@@ -3,6 +3,7 @@ import os
 import random
 from time import sleep as wait
 pygame.init()
+pygame.display.set_caption('Blackjack')
 clock = pygame.time.Clock()
 base_dir = os.path.abspath(__file__)
 asset_dir = os.path.join(os.path.dirname(__file__), "assets")
@@ -13,39 +14,59 @@ background = pygame.transform.scale(background,(scr_width,scr_height))
 hit_playing = False
 font = pygame.font.SysFont(None, 60)
 possible_cards = [2,3,4,5,6,7,8,9,10,]
-starting_card = random.choice(possible_cards)
+starting_card = int(random.choice(possible_cards))
 total = int(starting_card)
 dealer = 0
 WHITE = 255,255,255
 running = True
+asking = False
+new_card_shown = False
+new_cards = []
+start_card_img = pygame.image.load(os.path.join(asset_dir, f"{starting_card}.png"))
+card_width, card_height = start_card_img.get_size()
+hit_or_stay_txt = font.render("1:Hit \n2:Stay", False, WHITE)
+new_card = random.choice(possible_cards)
+new_card_img = pygame.image.load(os.path.join(asset_dir, f"{new_card}.png"))
 
-start_card_txt = font.render(f"your starting card is {starting_card}",False, WHITE)
-hit_or_stay_txt = font.render("1:Hit /n2:Stay", False, WHITE)
 def choice_1():
     global total
     global running
     global hit_playing
-    new_card = random.choice(possible_cards)
+    global new_card_shown
+    global new_card
+    global new_card_img
+    global new_cards
+    new_card = int(random.choice(possible_cards))
+    new_cards.append(new_card)
     screen.blit(font.render(f"your new card is {new_card}",False, WHITE),(scr_width/2, 0))
+    for new_card in new_cards:
+        new_card_img = pygame.image.load(os.path.join(asset_dir, f"{new_card}.png"))
+    new_card_shown = True
     total = int(new_card) + total
-    screen.blit(font.render(f"your total is {total}",False, WHITE),(scr_width/2, 60))
-    pygame.display.flip()
-    wait(1.5)
     if total >21:
-        screen.blit(font.render("Game Over",False, WHITE),(scr_width/2, scr_height/2))
+        screen.blit(font.render("Game Over",False, WHITE),(scr_width/3, scr_height/6))
         pygame.display.flip()
-        wait(1)
         running = False
+        hit_playing = False
     hit_playing = False
+
 def clear():
      global background
      global start_card_txt
-     global hit_or_stay_txt
+     global hit_or_stay_img
+     global card_width
+     global card_height
+     global new_card_shown
+     global new_cards
      screen.blit(background,(0,0))
-     screen.blit(start_card_txt,(0,0))
+     screen.blit(start_card_img,(scr_width/2-card_width,scr_height -card_height))
+     if new_card_shown:
+         for new_card in new_cards:
+             screen.blit(new_card_img,(scr_width/2-card_width+len(new_cards)*30,scr_height -card_height))
      screen.blit(font.render(f"your total is {total}",False, WHITE),(0,60))
      screen.blit(hit_or_stay_txt,(0,120))
      pygame.display.flip()
+
 def choice_2():
     global dealer
     global possible_cards
@@ -53,57 +74,66 @@ def choice_2():
     while not dealer >=17:
         clear()
         dealer_card = int(random.choice(possible_cards))
-        screen.blit(font.render(f"Dealer got a {dealer_card}",False, WHITE),(scr_width/2, scr_height/2))
+        screen.blit(font.render(f"Dealer got a {dealer_card}",False, WHITE),(scr_width/2, scr_height/5))
         pygame.display.flip()
         wait(1)
         dealer += dealer_card
-        screen.blit(font.render(f"Dealer now has {dealer}",False, WHITE),(scr_width/2, scr_height/2 +60))
+        screen.blit(font.render(f"Dealer now has {dealer}",False, WHITE),(scr_width/2, scr_height/5 +40))
         pygame.display.flip()
         wait(1)
     if dealer > 21:
         clear()
-        screen.blit(font.render("You Win!",False, WHITE),(scr_width/2, scr_height/2))
+        screen.blit(font.render("You Win!",False, WHITE),(scr_width/3, scr_height/6))
         pygame.display.flip()
         wait(1)
         running = False
     elif dealer == 21:
         clear()
-        screen.blit(font.render("Game Over",False, WHITE),(scr_width/2, scr_height/2))
+        screen.blit(font.render("Game Over",False, WHITE),(scr_width/3, scr_height/6))
         pygame.display.flip()
         wait(1)
         running = False
     elif dealer < 21:
         if dealer > total:
             clear()
-            screen.blit(font.render("Game Over",False, WHITE),(scr_width/2, scr_height/2))
+            screen.blit(font.render("Game Over",False, WHITE),(scr_width/3, scr_height/6))
             pygame.display.flip()
             wait(1)
             running = False
         else:
             clear()
-            screen.blit(font.render("You Win!",False, WHITE),(scr_width/2, scr_height/2))
+            screen.blit(font.render("You Win!",False, WHITE),(scr_width/3, scr_height/6))
             pygame.display.flip()
             wait(1)
             running = False
+
 def ask():
     global running
     global total
     global dealer
     global starting_card
+    global asking
+    global new_card_shown
+    global starting_card
+    global start_card_img
     clear()
     asking = True
     while asking:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_y:
+                    starting_card = int(random.choice(possible_cards))
+                    start_card_img = pygame.image.load(os.path.join(asset_dir, f"{starting_card}.png"))
                     total = starting_card
+                    new_cards = []
                     dealer = 0
+                    new_card_shown = False
                     running = True
-                    asking = False
                     game()
-                else:
                     asking = False
-        screen.blit(font.render("do you want to play again? (Y/N)",False, WHITE),(scr_width/2, scr_height/2))
+                elif event.key == pygame.K_n:
+                    asking = False
+        screen.blit(font.render("do you want to play again? (Y/N)",False, WHITE),(scr_width/3, scr_height/6))
         pygame.display.flip()
 
 def game():
