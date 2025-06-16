@@ -3,6 +3,7 @@ import os
 import random
 from time import sleep as wait
 pygame.init()
+OLDCARDS = -1
 pygame.display.set_caption('Blackjack')
 clock = pygame.time.Clock()
 base_dir = os.path.abspath(__file__)
@@ -21,12 +22,13 @@ WHITE = 255,255,255
 running = True
 asking = False
 new_card_shown = False
-new_cards = []
-start_card_img = pygame.image.load(os.path.join(asset_dir, f"{starting_card}.png"))
+NEWCARDS = []
+NEWCARDSDEALER = []
+start_card_img = pygame.image.load(os.path.join(asset_dir, f"{starting_card}.png")).convert()
+start_card_img = pygame.transform.scale(start_card_img,(scr_width/6, scr_height/4))
 card_width, card_height = start_card_img.get_size()
 hit_or_stay_txt = font.render("1:Hit \n2:Stay", False, WHITE)
 new_card = random.choice(possible_cards)
-new_card_img = pygame.image.load(os.path.join(asset_dir, f"{new_card}.png"))
 
 def choice_1():
     global total
@@ -34,13 +36,9 @@ def choice_1():
     global hit_playing
     global new_card_shown
     global new_card
-    global new_card_img
-    global new_cards
+    NEWCARDS
     new_card = int(random.choice(possible_cards))
-    new_cards.append(new_card)
-    screen.blit(font.render(f"your new card is {new_card}",False, WHITE),(scr_width/2, 0))
-    for new_card in new_cards:
-        new_card_img = pygame.image.load(os.path.join(asset_dir, f"{new_card}.png"))
+    NEWCARDS.append(new_card)
     new_card_shown = True
     total = int(new_card) + total
     if total >21:
@@ -57,14 +55,18 @@ def clear():
      global card_width
      global card_height
      global new_card_shown
-     global new_cards
      screen.blit(background,(0,0))
-     screen.blit(start_card_img,(scr_width/2-card_width,scr_height -card_height))
-     if new_card_shown:
-         for new_card in new_cards:
-             screen.blit(new_card_img,(scr_width/2-card_width+len(new_cards)*30,scr_height -card_height))
+     screen.blit(start_card_img,(scr_width/2-card_width,scr_height -card_height))        
      screen.blit(font.render(f"your total is {total}",False, WHITE),(0,60))
      screen.blit(hit_or_stay_txt,(0,120))
+     for i in range(len(NEWCARDSDEALER)):
+         new_card_img_dealer = pygame.image.load(os.path.join(asset_dir, f"{NEWCARDSDEALER[i]}.png")).convert()
+         new_card_img_dealer = pygame.transform.scale(new_card_img_dealer,(scr_width/6, scr_height/4))
+         screen.blit(new_card_img_dealer,(scr_width/2-card_width+(i+1)*30,0))
+     for i in range(len(NEWCARDS)):
+                new_card_img = pygame.image.load(os.path.join(asset_dir, f"{NEWCARDS[i]}.png")).convert()
+                new_card_img = pygame.transform.scale(new_card_img,(scr_width/6, scr_height/4))
+                screen.blit(new_card_img,(scr_width/2-card_width+(i+1)*30,scr_height -card_height))
      pygame.display.flip()
 
 def choice_2():
@@ -74,11 +76,12 @@ def choice_2():
     while not dealer >=17:
         clear()
         dealer_card = int(random.choice(possible_cards))
-        screen.blit(font.render(f"Dealer got a {dealer_card}",False, WHITE),(scr_width/2, scr_height/5))
+        NEWCARDSDEALER.append(dealer_card)
+        screen.blit(font.render(f"Dealer got a {dealer_card}",False, WHITE),(scr_width/2, scr_height/2))
         pygame.display.flip()
         wait(1)
         dealer += dealer_card
-        screen.blit(font.render(f"Dealer now has {dealer}",False, WHITE),(scr_width/2, scr_height/5 +40))
+        screen.blit(font.render(f"Dealer now has {dealer}",False, WHITE),(scr_width/2, scr_height/2+60))
         pygame.display.flip()
         wait(1)
     if dealer > 21:
@@ -108,6 +111,8 @@ def choice_2():
             running = False
 
 def ask():
+    global NEWCARDS
+    global NEWCARDSDEALER
     global running
     global total
     global dealer
@@ -116,16 +121,19 @@ def ask():
     global new_card_shown
     global starting_card
     global start_card_img
+    NEWCARDS = []
     clear()
     asking = True
     while asking:
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:     
                 if event.key == pygame.K_y:
                     starting_card = int(random.choice(possible_cards))
-                    start_card_img = pygame.image.load(os.path.join(asset_dir, f"{starting_card}.png"))
+                    start_card_img = pygame.image.load(os.path.join(asset_dir, f"{starting_card}.png")).convert()
+                    start_card_img = pygame.transform.scale(start_card_img,(scr_width/6, scr_height/4))
                     total = starting_card
-                    new_cards = []
+                    NEWCARDS = []
+                    NEWCARDSDEALER = []
                     dealer = 0
                     new_card_shown = False
                     running = True
@@ -137,6 +145,7 @@ def ask():
         pygame.display.flip()
 
 def game():
+    OLDCARDS = -1
     global running
     global hit_playing
     while running:
